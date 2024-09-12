@@ -3,19 +3,20 @@ import 'package:gap/gap.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:spotube/collections/spotube_icons.dart';
-import 'package:spotube/components/player/player_queue.dart';
-import 'package:spotube/components/player/volume_slider.dart';
-import 'package:spotube/components/shared/image/universal_image.dart';
-import 'package:spotube/components/shared/links/anchor_button.dart';
-import 'package:spotube/components/shared/links/artist_link.dart';
-import 'package:spotube/components/shared/page_window_title_bar.dart';
+import 'package:spotube/modules/player/player_queue.dart';
+import 'package:spotube/modules/player/volume_slider.dart';
+import 'package:spotube/components/image/universal_image.dart';
+import 'package:spotube/components/links/anchor_button.dart';
+import 'package:spotube/components/links/artist_link.dart';
+import 'package:spotube/components/titlebar/titlebar.dart';
 import 'package:spotube/extensions/constrains.dart';
 import 'package:spotube/extensions/context.dart';
 import 'package:spotube/extensions/duration.dart';
 import 'package:spotube/extensions/image.dart';
+import 'package:spotube/pages/track/track.dart';
 import 'package:spotube/provider/connect/clients.dart';
 import 'package:spotube/provider/connect/connect.dart';
-import 'package:spotube/services/audio_player/loop_mode.dart';
+import 'package:media_kit/media_kit.dart' hide Track;
 import 'package:spotube/utils/service_utils.dart';
 
 class RemotePlayerQueue extends ConsumerWidget {
@@ -46,6 +47,8 @@ class RemotePlayerQueue extends ConsumerWidget {
 }
 
 class ConnectControlPage extends HookConsumerWidget {
+  static const name = "connect_control";
+
   const ConnectControlPage({super.key});
 
   @override
@@ -125,9 +128,13 @@ class ConnectControlPage extends HookConsumerWidget {
                               playlist.activeTrack?.name ?? "",
                               style: textTheme.titleLarge!,
                               onTap: () {
-                                ServiceUtils.push(
+                                if (playlist.activeTrack == null) return;
+                                ServiceUtils.pushNamed(
                                   context,
-                                  "/track/${playlist.activeTrack?.id}",
+                                  TrackPage.name,
+                                  pathParameters: {
+                                    "id": playlist.activeTrack!.id!,
+                                  },
                                 );
                               },
                             ),
@@ -137,6 +144,14 @@ class ConnectControlPage extends HookConsumerWidget {
                               artists: playlist.activeTrack?.artists ?? [],
                               textStyle: textTheme.bodyMedium!,
                               mainAxisAlignment: WrapAlignment.start,
+                              onOverflowArtistClick: () =>
+                                  ServiceUtils.pushNamed(
+                                context,
+                                TrackPage.name,
+                                pathParameters: {
+                                  "id": playlist.activeTrack!.id!,
+                                },
+                              ),
                             ),
                           ),
                         ],
@@ -237,18 +252,18 @@ class ConnectControlPage extends HookConsumerWidget {
                                 : connectNotifier.next,
                           ),
                           IconButton(
-                            tooltip: loopMode == PlaybackLoopMode.one
+                            tooltip: loopMode == PlaylistMode.single
                                 ? context.l10n.loop_track
-                                : loopMode == PlaybackLoopMode.all
+                                : loopMode == PlaylistMode.loop
                                     ? context.l10n.repeat_playlist
                                     : null,
                             icon: Icon(
-                              loopMode == PlaybackLoopMode.one
+                              loopMode == PlaylistMode.single
                                   ? SpotubeIcons.repeatOne
                                   : SpotubeIcons.repeat,
                             ),
-                            style: loopMode == PlaybackLoopMode.one ||
-                                    loopMode == PlaybackLoopMode.all
+                            style: loopMode == PlaylistMode.single ||
+                                    loopMode == PlaylistMode.loop
                                 ? activeButtonStyle
                                 : buttonStyle,
                             onPressed: playlist.activeTrack == null
@@ -256,12 +271,11 @@ class ConnectControlPage extends HookConsumerWidget {
                                 : () async {
                                     connectNotifier.setLoopMode(
                                       switch (loopMode) {
-                                        PlaybackLoopMode.all =>
-                                          PlaybackLoopMode.one,
-                                        PlaybackLoopMode.one =>
-                                          PlaybackLoopMode.none,
-                                        PlaybackLoopMode.none =>
-                                          PlaybackLoopMode.all,
+                                        PlaylistMode.loop =>
+                                          PlaylistMode.single,
+                                        PlaylistMode.single =>
+                                          PlaylistMode.none,
+                                        PlaylistMode.none => PlaylistMode.loop,
                                       },
                                     );
                                   },

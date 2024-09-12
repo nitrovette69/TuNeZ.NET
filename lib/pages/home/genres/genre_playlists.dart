@@ -5,16 +5,18 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 import 'package:spotify/spotify.dart' hide Offset;
 import 'package:spotube/collections/fake.dart';
-import 'package:spotube/components/playlist/playlist_card.dart';
-import 'package:spotube/components/shared/image/universal_image.dart';
-import 'package:spotube/components/shared/page_window_title_bar.dart';
-import 'package:spotube/components/shared/waypoint.dart';
+import 'package:spotube/modules/playlist/playlist_card.dart';
+import 'package:spotube/components/image/universal_image.dart';
+import 'package:spotube/components/titlebar/titlebar.dart';
+import 'package:spotube/components/waypoint.dart';
 import 'package:spotube/extensions/constrains.dart';
 import 'package:spotube/provider/spotify/spotify.dart';
 import 'package:collection/collection.dart';
-import 'package:flutter_desktop_tools/flutter_desktop_tools.dart';
+import 'package:spotube/utils/platform.dart';
 
 class GenrePlaylistsPage extends HookConsumerWidget {
+  static const name = "genre_playlists";
+
   final Category category;
   const GenrePlaylistsPage({super.key, required this.category});
 
@@ -27,7 +29,7 @@ class GenrePlaylistsPage extends HookConsumerWidget {
     final scrollController = useScrollController();
 
     return Scaffold(
-      appBar: DesktopTools.platform.isDesktop
+      appBar: kIsDesktop
           ? const PageWindowTitleBar(
               leading: BackButton(color: Colors.white),
               backgroundColor: Colors.transparent,
@@ -53,12 +55,12 @@ class GenrePlaylistsPage extends HookConsumerWidget {
           controller: scrollController,
           slivers: [
             SliverAppBar(
-              automaticallyImplyLeading: DesktopTools.platform.isMobile,
+              automaticallyImplyLeading: kIsMobile,
               expandedHeight: mediaQuery.mdAndDown ? 200 : 150,
               title: const Text(""),
               backgroundColor: Colors.transparent,
               flexibleSpace: FlexibleSpaceBar(
-                centerTitle: DesktopTools.platform.isDesktop,
+                centerTitle: kIsDesktop,
                 title: Text(
                   category.name!,
                   style: Theme.of(context).textTheme.headlineMedium?.copyWith(

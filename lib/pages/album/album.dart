@@ -1,13 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:spotify/spotify.dart';
-import 'package:spotube/components/shared/tracks_view/track_view.dart';
-import 'package:spotube/components/shared/tracks_view/track_view_props.dart';
+import 'package:spotube/components/tracks_view/track_view.dart';
+import 'package:spotube/components/tracks_view/track_view_props.dart';
 import 'package:spotube/extensions/context.dart';
 import 'package:spotube/extensions/image.dart';
 import 'package:spotube/provider/spotify/spotify.dart';
 
 class AlbumPage extends HookConsumerWidget {
+  static const name = "album";
+
   final AlbumSimple album;
   const AlbumPage({
     super.key,
@@ -22,7 +24,7 @@ class AlbumPage extends HookConsumerWidget {
     final isSavedAlbum = ref.watch(albumsIsSavedProvider(album.id!));
 
     return InheritedTrackView(
-      collectionId: album.id!,
+      collection: album,
       image: album.images.asUrlString(
         placeholder: ImagePlaceholder.albumArt,
       ),
@@ -44,7 +46,8 @@ class AlbumPage extends HookConsumerWidget {
         },
       ),
       routePath: "/album/${album.id}",
-      shareUrl: album.externalUrls!.spotify!,
+      shareUrl: album.externalUrls?.spotify ??
+          "https://open.spotify.com/album/${album.id}",
       isLiked: isSavedAlbum.asData?.value ?? false,
       onHeart: isSavedAlbum.asData?.value == null
           ? null

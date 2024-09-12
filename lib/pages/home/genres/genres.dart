@@ -6,12 +6,14 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:spotube/collections/gradients.dart';
-import 'package:spotube/components/shared/page_window_title_bar.dart';
+import 'package:spotube/components/titlebar/titlebar.dart';
 import 'package:spotube/extensions/constrains.dart';
 import 'package:spotube/extensions/context.dart';
+import 'package:spotube/pages/home/genres/genre_playlists.dart';
 import 'package:spotube/provider/spotify/spotify.dart';
 
 class GenrePage extends HookConsumerWidget {
+  static const name = "genre";
   const GenrePage({super.key});
 
   @override
@@ -47,7 +49,13 @@ class GenrePage extends HookConsumerWidget {
             return InkWell(
               borderRadius: BorderRadius.circular(8),
               onTap: () {
-                context.push("/genre/${category.id}", extra: category);
+                context.pushNamed(
+                  GenrePlaylistsPage.name,
+                  pathParameters: {
+                    "categoryId": category.id!,
+                  },
+                  extra: category,
+                );
               },
               child: Ink(
                 padding: const EdgeInsets.all(8),
